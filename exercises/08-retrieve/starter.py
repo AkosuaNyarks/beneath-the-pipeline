@@ -66,6 +66,12 @@ def score_term_counts(index: Index, query: str) -> dict[int, float]:
     scores: dict[int, float] = {}
     # TODO
     ...
+    tokens_in_query=tokenize(query)
+    for token in tokens_in_query:
+        if token in index.postings:
+            for i in range(len(index.postings[token])):
+                doc_id,tf=index.postings[token][i]
+                scores[doc_id]=scores.get(doc_id,0) + tf
     return scores
 
 
@@ -88,9 +94,23 @@ def score_term_counts(index: Index, query: str) -> dict[int, float]:
 # to stop long documents winning by sheer size.
 
 def score_tfidf(index: Index, query: str) -> dict[int, float]:
+    import math
     scores: dict[int, float] = {}
     # TODO
     ...
+    tokens_in_query=tokenize(query)
+    for token in tokens_in_query:
+            if token in index.postings:
+                for i in range(len(index.postings[token])):
+                    doc_id,tf=index.postings[token][i]
+                    tf_weight= 1+math.log(tf)
+                    total_docs=index.N
+                    docs_with_term = index.df[token]
+                    idf = math.log(total_docs/ docs_with_term)
+                    tfidf=tf_weight * idf
+                    normalized_tfidf=tfidf/math.sqrt(index.doc_len[doc_id])
+                    scores[doc_id]=scores.get(doc_id,0) + normalized_tfidf
+
     return scores
 
 
@@ -114,9 +134,21 @@ def score_tfidf(index: Index, query: str) -> dict[int, float]:
 
 def score_bm25(index: Index, query: str, k1: float = 1.2,
                b: float = 0.75) -> dict[int, float]:
+    import math
     scores: dict[int, float] = {}
-    # TODO
-    ...
+    tokens_in_query=tokenize(query)
+    for token in tokens_in_query:
+        if token in index.postings:
+            for i in range(len(index.postings[token])):
+                doc_id,tf=index.postings[token][i]
+                total_docs=index.N
+                docs_with_term = index.df[token]
+                idf=math.log(1+(total_docs-docs_with_term+0.5)/ (docs_with_term + 0.5))
+                doc_len_ratio=index.doc_len[doc_id]/index.avgdl
+                tf_numerator=tf*(k1+1)
+                length_normalization=k1*(1-b+b*doc_len_ratio)
+                bm25= idf* ((tf_numerator)/(tf+length_normalization))
+                scores[doc_id]=scores.get(doc_id,0) + bm25           
     return scores
 
 
@@ -134,6 +166,15 @@ def score_bm25(index: Index, query: str, k1: float = 1.2,
 def precision_at_k(ranked: list[int], relevant: set[int], k: int = 10) -> float:
     # TODO
     ...
+    top_k_docs=ranked[:k]
+    num_of_relevant_docs=0
+    for val in relevant:
+        if val in top_k_docs:
+            num_of_relevant_docs+=1
+    precision_at_k=num_of_relevant_docs/k
+    return precision_at_k
+
+   
 
 
 # ==========================================================================
@@ -154,10 +195,37 @@ def precision_at_k(ranked: list[int], relevant: set[int], k: int = 10) -> float:
 #
 # Return NDCG@k.
 
-def ndcg_at_k(ranked: list[int], relevant: set[int], k: int = 10) -> float:
-    # TODO
-    ...
+def ndcg_at_k(ranked: list[int], relevant: set[int], k: int = 5) -> float:
+    import math 
 
+    top_k_docs=ranked[:k]
+    DCG=0
+    index=1
+    relevance_list=[]
+    for doc in top_k_docs:
+        if doc in relevant:
+            relevance=1
+            logarithmic_discount=math.log2(index + 1)
+            DCG+=relevance/logarithmic_discount
+            index+=1
+            relevance_list.append(relevance)
+        else:
+            relevance=0
+            logarithmic_discount=math.log2(index + 1)
+            DCG+=relevance/logarithmic_discount
+            index+=1
+            relevance_list.append(relevance)
+    
+    IDCG_list=[1]* min(len(relevant),k)
+    IDCG=0
+    for idx in range(len(IDCG_list)):
+        IDCGlogarithmic_discount=math.log2(idx+2)
+        IDCG += IDCG_list[idx]/IDCGlogarithmic_discount
+    if IDCG==0:
+        return 0.0
+    else:
+        NDCG=DCG/IDCG
+        return NDCG
 
 # --------------------------------------------------------------------------
 # plumbing — written for you
@@ -214,4 +282,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # print(" Testing ndcg @K")
+    # print(ndcg_at_k([2,6,8,9,10],(6,11,9,5,3)))
     main()

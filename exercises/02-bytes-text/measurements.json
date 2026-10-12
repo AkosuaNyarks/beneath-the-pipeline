@@ -1,18 +1,18 @@
 {
-  "_generated_unix": 1785264888,
+  "_generated_unix": 1786413255,
   "_machine": {
-    "cores": 18,
-    "cpu": "Apple M5 Max",
+    "cores": 10,
+    "cpu": "Apple M4",
     "disk": "SSD",
     "gpu": {
       "detail": "torch 2.13.0",
       "kind": "mps",
       "name": "Apple Silicon GPU (Metal)"
     },
-    "os": "macOS 26.5.1",
-    "python": "3.11.5",
-    "ram_bytes": 137438953472,
-    "ram_human": "128.0 GB"
+    "os": "macOS 15.7.4",
+    "python": "3.14.3",
+    "ram_bytes": 25769803776,
+    "ram_human": "24.0 GB"
   },
   "astronaut": {
     "displayed_as": "one glyph",

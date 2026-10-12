@@ -37,8 +37,8 @@ TOKEN = re.compile(r"[a-z0-9]+")
 
 def tokenize(text: str) -> list[str]:
     # TODO — one line with TOKEN.findall is fine
-    ...
-
+    normalize_lower=text.lower()
+    return TOKEN.findall(normalize_lower)
 
 # ==========================================================================
 # TODO 2 — the scan: no index at all
@@ -52,7 +52,15 @@ def tokenize(text: str) -> list[str]:
 
 def scan(passages, word: str) -> list[int]:
     # TODO
-    ...
+    words_found=[]
+    for pid,text in passages:
+        tokenized_text=tokenize(text)
+        tokenized_word=tokenize(word)
+        if tokenized_word[0] in tokenized_text:
+            words_found.append(pid)
+    return sorted(words_found)
+
+    
 
 
 # ==========================================================================
@@ -69,9 +77,18 @@ def scan(passages, word: str) -> list[int]:
 # them and needs them without duplicates.
 
 def build_inverted_index(passages) -> dict[str, list[int]]:
-    index = {}
+    from collections import defaultdict
+    index = defaultdict(set)
     # TODO
-    ...
+    for passage in passages:
+        pid,text=passage
+        tokenize_text=tokenize(text)
+        for word in tokenize_text:
+            index[word].add(pid)
+
+    for token,posting_list in index.items():
+        index[token]=sorted(posting_list)
+
     return index
 
 
@@ -92,6 +109,10 @@ def build_inverted_index(passages) -> dict[str, list[int]]:
 def brute_force_topk(vectors, query, k: int = 10):
     # TODO — numpy: vectors @ query, then argsort
     ...
+    import numpy as np
+    similarity=vectors@ query
+    sorting=np.argsort(similarity)[::-1]
+    return sorting[:k]
 
 
 # --------------------------------------------------------------------------

@@ -38,11 +38,25 @@ from common import rule   # noqa: E402
 def hexdump(data: bytes, width: int = 16) -> list[str]:
     rows = []
     for offset in range(0, len(data), width):
-        chunk = data[offset:offset + width]
         # TODO: build one line for this chunk and append it to rows
-        ...
-    return rows
+        chunk = data[offset: offset + width]
+        offset_part=f'{offset:08x}'
 
+        hex_values=[]
+        for byte in chunk:
+            hex_values.append(f'{byte:02x}')
+        hex_part=" ".join(hex_values)
+
+        ascii_values=[]
+        for byte in chunk:
+            if byte>=32 and byte<=126:
+                ascii_values.append(chr(byte))
+            else:
+                ascii_values.append(".")
+            ascii_part=f'|{"".join(ascii_values)}|'
+        complete_row= offset_part + hex_part + ascii_part
+        rows.append(complete_row)
+    return rows
 
 # ==========================================================================
 # TODO 2 — read a real format's header, straight from its written agreement
@@ -70,11 +84,24 @@ def hexdump(data: bytes, width: int = 16) -> list[str]:
 
 def parse_wav_header(data: bytes, endian: str = "<") -> dict:
     # TODO: read the five fields above and return them in a dict
-    ...
+    result ={}
+    riff=data[0:4].decode('ascii')
+    wave= data[8:12].decode('ascii')
+    channels,=struct.unpack_from(endian+"H",data,22)
+    sample_rate,= struct.unpack_from(endian+"I",data,24)
+    bits_per_sample,=struct.unpack_from(endian+"H",data,34)
+    result["riff"]=riff
+    result["wave"]=wave
+    result["channels"]=channels
+    result["sample_rate"]=sample_rate
+    result["bits_per_sample"]=bits_per_sample
+    return result
+
+
 
 
 # ==========================================================================
-# TODO 3 — integers overflow because a width is a promise about range
+# TODO 4 — integers overflow because a width is a promise about range
 # ==========================================================================
 #
 # Pack `value` into `width` bytes as an *unsigned* integer, then read it back.
@@ -86,11 +113,30 @@ def parse_wav_header(data: bytes, endian: str = "<") -> dict:
 
 def store_unsigned(value: int, width: int) -> tuple[int, bool]:
     # TODO: pack into `width` bytes, wrapping if it does not fit
-    ...
+    if width==4:
+        fmt='I'
+    elif width ==1:
+        fmt='B'
+    elif width==2:
+        fmt='H'
+    elif width==8:
+        fmt='Q'
+    else:
+        ValueError("The width must be 1,2,4, or 8")
 
+
+    try:
+        res=struct.pack(fmt,value)
+        Overflow=False
+    except struct.error:
+        newVal=value % (256 ** width)
+        res=struct.pack(fmt,newVal)
+        Overflow=True
+    main_Val,=struct.unpack(fmt,res)
+    return(main_Val,Overflow)
 
 # ==========================================================================
-# TODO 4 — why 0.1 + 0.2 is not 0.3
+# TODO 5 — why 0.1 + 0.2 is not 0.3
 # ==========================================================================
 #
 # A 64-bit float stores a number as a fraction times a power of two. Numbers
@@ -107,7 +153,20 @@ def store_unsigned(value: int, width: int) -> tuple[int, bool]:
 def float_facts() -> dict:
     from decimal import Decimal   # noqa: F401  (you will want this)
     # TODO
-    ...
+    results={}
+    summ=0.1+0.2
+    equals_point_three=(summ==0.3)
+    error=summ-0.3
+    as_bytes=struct.pack('<d',0.1).hex()
+    exact=Decimal(0.1)
+    results["sum"]=summ
+    results["equals_point_three"]=summ
+    results["error"]=error
+    results["equals_point_three"]=equals_point_three
+    results["as_bytes"]=as_bytes
+    results["exact"]=exact
+    return results
+  
 
 
 # --------------------------------------------------------------------------

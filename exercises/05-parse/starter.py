@@ -48,8 +48,20 @@ def parse_csv_line(line: str) -> list[str]:
     while i < len(line):
         ch = line[i]
         # TODO: handle the quote character, the comma, and everything else
-        ...
+
+        if in_quotes and ch == '"' and i + 1 < len(line) and line[i + 1] == '"':
+            field.append(line[i+1])
+        elif ch=='"':
+            in_quotes=not in_quotes
+
+        elif ch == "," and in_quotes==False:
+            fields.append("".join(field))
+            field = []
+        else:
+            field.append(ch)
         i += 1
+    fields.append("".join(field))
+
     # TODO: don't forget the last field
     return fields
 
@@ -68,6 +80,9 @@ def count_word_in_raw_bytes(pdf_path: Path, word: str) -> int:
     raw = pdf_path.read_bytes()
     # TODO: count occurrences of `word` in `raw` (encode the word first)
     ...
+    newWord=word.encode()
+    return(raw.count(newWord))
+    
 
 
 # ==========================================================================
@@ -89,6 +104,16 @@ def compare(a: str, b: str) -> dict:
     import difflib   # noqa: F401
     # TODO
     ...
+    res={}
+    res["char_ratio"]=difflib.SequenceMatcher(None, a, b).ratio() 
+    same_words= sorted(a.split()) == sorted(b.split())
+    res["same_words"]=same_words
+    words_a=set(a.split())
+    words_b=set(b.split())
+    res["only_in_a"]= len(words_a-words_b)
+    res["only_in_b"]= len(words_b-words_a)
+
+    return res
 
 
 # --------------------------------------------------------------------------

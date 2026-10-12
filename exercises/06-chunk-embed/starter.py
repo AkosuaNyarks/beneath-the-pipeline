@@ -9,6 +9,7 @@ Four TODOs. Two about cutting text up, two about turning it into numbers.
 Needs: sentence-transformers, numpy.
 Needs the corpus: python data/fetch.py --only msmarco --small
 """
+from math import sqrt
 import sys
 from pathlib import Path
 
@@ -39,6 +40,14 @@ def chunk_fixed(text: str, size: int = 500, overlap: int = 100) -> list[dict]:
     chunks = []
     # TODO
     ...
+    step_size=size-overlap
+    for i in range(0, len(text),step_size):
+        text_dict={}
+        text_dict["start"]=i
+        text_dict["end"]=i+size
+        text_dict["text"]=text[i:min(i+size,len(text))]
+        chunks.append(text_dict)
+
     return chunks
 
 
@@ -60,6 +69,57 @@ def chunk_sentences(text: str, max_chars: int = 500) -> list[dict]:
     chunks = []
     # TODO
     ...
+    sentence=[]
+    records=[]
+   
+    sentence_start=0
+    for character in range(len(text)):
+        if text[character] == "." or text[character] == "!" or text[character] == "?":
+            sentence.append(text[character])     
+            if character+1==len(text) or text[character+1]=="\n" or text[character+1]==" " :
+                textDict={}
+                textDict["start"]=sentence_start
+                textDict["end"]=character+1
+                textDict["text"]= "".join(sentence)
+                records.append(textDict)
+                sentence=[]
+                sentence_start=character+1               
+        else:
+            sentence.append(text[character])
+    if len(sentence)!=0:
+        textDict2={}
+        textDict2["start"]=sentence_start
+        textDict2["end"]=character+1
+        textDict2["text"]= "".join(sentence)
+        records.append(textDict2)
+    current_chunk=""
+    current_start=0
+    current_end=0
+    for record in records:
+        incoming_sentence=record["text"]
+        if len(current_chunk)==0:
+            current_start=record["start"]
+        if len(current_chunk)+len(incoming_sentence)<=max_chars:
+            current_chunk=current_chunk + incoming_sentence
+            current_end=record["end"]
+        else:
+            textDict={}
+            textDict["start"]=current_start
+            textDict["end"]=current_end
+            textDict["text"]=current_chunk
+            current_chunk=incoming_sentence
+            current_start=record["start"]
+            current_end=record["end"]
+            chunks.append(textDict)
+    if len(current_chunk)!=0:
+        textDict={}
+        textDict["start"]=current_start
+        textDict["end"]=current_end
+        textDict["text"]=current_chunk
+        chunks.append(textDict)
+        
+
+
     return chunks
 
 
@@ -77,6 +137,19 @@ def chunk_sentences(text: str, max_chars: int = 500) -> list[dict]:
 def cosine(a, b) -> float:
     # TODO — about five lines
     ...
+    dotProduct=0
+    for i in range(len(a)):
+       dotProduct+=a[i]*b[i]
+    distA=0 
+    distB=0
+    for i in range(len(a)):
+        distA+=a[i]**2
+        distB+=b[i]**2
+    magnitude=sqrt(distA) * sqrt(distB)
+    cosine_similarity=dotProduct/magnitude
+    return cosine_similarity
+
+
 
 
 # ==========================================================================
@@ -93,6 +166,30 @@ def cosine(a, b) -> float:
 def straddling_chunks(text: str, chunks: list[dict]) -> list[dict]:
     # TODO
     ...
+    straddling_chunks=[]
+    for chunkDictionary in chunks:
+        if chunkDictionary["start"]!=0:
+            start=chunkDictionary["start"]
+            if text[start-1] !=" " and  text[start] !=" ":
+                prefix=""
+                index=start-1
+                while text[index]!=" ":
+                    prefix=text[index]+prefix
+                    index-=1
+                suffix=""
+                suffix_index=start
+                while suffix_index< len(text) and text[suffix_index]!=" ":
+                    suffix+=text[suffix_index]
+                    suffix_index+=1
+                word=prefix+suffix
+                straddlingDictionary={}
+                straddlingDictionary["start"]=start
+                straddlingDictionary["broken_word"]=word
+                straddling_chunks.append(straddlingDictionary)
+    return straddling_chunks
+                
+
+
 
 
 # --------------------------------------------------------------------------

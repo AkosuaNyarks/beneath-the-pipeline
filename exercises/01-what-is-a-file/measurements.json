@@ -1,18 +1,18 @@
 {
-  "_generated_unix": 1785264784,
+  "_generated_unix": 1786407085,
   "_machine": {
-    "cores": 18,
-    "cpu": "Apple M5 Max",
+    "cores": 10,
+    "cpu": "Apple M4",
     "disk": "SSD",
     "gpu": {
       "detail": "torch 2.13.0",
       "kind": "mps",
       "name": "Apple Silicon GPU (Metal)"
     },
-    "os": "macOS 26.5.1",
-    "python": "3.11.5",
-    "ram_bytes": 137438953472,
-    "ram_human": "128.0 GB"
+    "os": "macOS 15.7.4",
+    "python": "3.14.3",
+    "ram_bytes": 25769803776,
+    "ram_human": "24.0 GB"
   },
   "after_unlink": {
     "content": "abcd",
@@ -46,7 +46,7 @@
   "directory": {
     "allocated": 0,
     "blocks_512": 0,
-    "inode": 20293771,
+    "inode": 16968165,
     "links": 6,
     "size": 192
   },
@@ -57,15 +57,15 @@
   "four_char": {
     "allocated": 4096,
     "blocks_512": 8,
-    "inode": 20293765,
+    "inode": 16968158,
     "links": 1,
     "size": 4
   },
   "fs_block_size": 1048576,
   "fs_frsize": 4096,
   "hardlink": {
-    "inode_a": 20293765,
-    "inode_b": 20293765,
+    "inode_a": 16968158,
+    "inode_b": 16968158,
     "link_count": 2,
     "same_inode": true
   },
@@ -86,7 +86,7 @@
   "three_char": {
     "allocated": 4096,
     "blocks_512": 8,
-    "inode": 20293765,
+    "inode": 16968158,
     "links": 1,
     "size": 3
   }

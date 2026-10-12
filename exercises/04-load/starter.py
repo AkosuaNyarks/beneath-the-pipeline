@@ -76,7 +76,14 @@ def read_file_by_file(paths, c: Crossings, chunk: int = 1 << 16) -> int:
     total = 0
     for path in paths:
         # TODO: open, read to the end, close. Add to total.
-        ...
+        fd=c.open(path)
+        while True:
+            data=c.read(fd,chunk)
+            if not data:
+                break
+            total+=len(data)
+        c.close(fd)
+
     return total
 
 
@@ -92,7 +99,14 @@ def read_file_by_file(paths, c: Crossings, chunk: int = 1 << 16) -> int:
 def read_small_buffer(path, c: Crossings, chunk: int = 4096) -> int:
     total = 0
     # TODO: open once, read `chunk` bytes at a time until empty, close
-    ...
+    fd=c.open(path)
+    while True:
+        data=c.read(fd,chunk)
+        if not data:
+          break
+        total+=len(data)
+    c.close(fd)
+
     return total
 
 
@@ -108,6 +122,13 @@ def read_large_buffer(path, c: Crossings, chunk: int = 1 << 22) -> int:
     total = 0
     # TODO: open once, read `chunk` bytes at a time until empty, close
     ...
+    fd=c.open(path)
+    while True:
+        data=c.read(fd,chunk)
+        if not data:
+            break
+        total+=len(data)
+    c.close(fd)
     return total
 
 
